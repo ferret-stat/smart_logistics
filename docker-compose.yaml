@@ -17,10 +17,10 @@ services:
       - ./sql:/docker-entrypoint-initdb.d
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d deals_bigdata"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d deals_bigdata"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 volumes:
-  postgres_data
+  postgres_data:
