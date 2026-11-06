@@ -1,0 +1,14 @@
+CREATE SCHEMA IF NOT EXISTS raw;
+CREATE SCHEMA IF NOT EXISTS core;
+CREATE SCHEMA IF NOT EXISTS mart;
+
+CREATE TABLE IF NOT EXISTS raw.etl_runs (
+    run_id BIGSERIAL PRIMARY KEY,
+    started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    finished_at TIMESTAMPTZ,
+    status VARCHAR(20) NOT NULL DEFAULT 'RUNNING',
+    extracted_count BIGINT DEFAULT 0,
+    loaded_count BIGINT DEFAULT 0,
+    quarantined_count BIGINT DEFAULT 0,
+    error_message TEXT
+);
