@@ -14,7 +14,7 @@ services:
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./deals_bigdata:/docker-entrypoint-initdb.d
+      - ./oltp:/docker-entrypoint-initdb.d
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${OLTP_USER} -d ${OLTP_DB}"]
@@ -43,3 +43,4 @@ services:
 
 volumes:
   postgres_data:
+  dwh_data:
