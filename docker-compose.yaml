@@ -72,6 +72,7 @@ services:
         condition: service_healthy
 
     environment:
+      PYTHONPATH: /opt/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_USER}:${AIRFLOW_PASS}@airflow-db:5432/airflow
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
@@ -99,9 +100,14 @@ services:
         condition: service_completed_successfully
 
     environment:
+      PYTHONPATH: /opt/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_USER}:${AIRFLOW_PASS}@airflow-db:5432/airflow
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+
+      AIRFLOW__CORE__HOSTNAME_CALLABLE: airflow.utils.net.get_host_ip_address
+      AIRFLOW_CONN_OLTP_POSTGRES: "postgresql://${OLTP_USER}:${OLTP_PASS}@oltp:5432/${OLTP_DB}"
+      AIRFLOW_CONN_DWH_POSTGRES: "postgresql://${DWH_USER}:${DWH_PASS}@dwh:5432/${DWH_DB}"
 
     ports:
       - "8080:8080"
@@ -112,6 +118,7 @@ services:
       - ./airflow/plugins:/opt/airflow/plugins
       - ./airflow/etl:/opt/airflow/etl
       - ./core:/opt/airflow/core
+      - ./volumes:/opt/airflow/volumes
 
     command: webserver
 
@@ -125,9 +132,14 @@ services:
         condition: service_completed_successfully
 
     environment:
+      PYTHONPATH: /opt/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_USER}:${AIRFLOW_PASS}@airflow-db:5432/airflow
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+
+      AIRFLOW__CORE__HOSTNAME_CALLABLE: airflow.utils.net.get_host_ip_address
+      AIRFLOW_CONN_OLTP_POSTGRES: "postgresql://${OLTP_USER}:${OLTP_PASS}@oltp:5432/${OLTP_DB}"
+      AIRFLOW_CONN_DWH_POSTGRES: "postgresql://${DWH_USER}:${DWH_PASS}@dwh:5432/${DWH_DB}"
 
     volumes:
       - ./airflow/dags:/opt/airflow/dags
@@ -135,6 +147,7 @@ services:
       - ./airflow/plugins:/opt/airflow/plugins
       - ./airflow/etl:/opt/airflow/etl
       - ./core:/opt/airflow/core
+      - ./volumes:/opt/airflow/volumes
 
     command: scheduler
 
