@@ -20,6 +20,7 @@ from etl.raw.load import load_data
         tz="Europe/Moscow",
     ),
     catchup=False,
+    is_paused_upon_creation=False,
     max_active_runs=1,
     tags=["smart-logistics", "etl", "raw"],
 )
@@ -84,6 +85,7 @@ def prices_raw_etl():
         tz="Europe/Moscow",
     ),
     catchup=False,
+    is_paused_upon_creation=False,
     max_active_runs=1,
     tags=["smart-logistics", "etl", "raw"],
 )
@@ -131,6 +133,7 @@ def exchange_rates_raw_etl():
     ),
     catchup=False,
     max_active_runs=1,
+    is_paused_upon_creation=False,
     tags=["smart-logistics", "etl", "raw"],
 )
 def cities_raw_etl():
@@ -178,6 +181,7 @@ def cities_raw_etl():
     ),
     catchup=False,
     max_active_runs=1,
+    is_paused_upon_creation=False,
     tags=["smart-logistics", "etl", "raw"],
 )
 def body_types_raw_etl():
