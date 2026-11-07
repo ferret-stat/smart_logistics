@@ -1,5 +1,4 @@
 import os
-import yaml
 
 from pathlib import Path
 from dotenv import load_dotenv
@@ -9,32 +8,38 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent
 
 class Settings:
-    pg_db = os.getenv('POSTGRES_DB')
-    pg_user = os.getenv('POSTGRES_USER')
-    pg_pass = os.getenv('POSTGRES_PASS')
-    pg_host = os.getenv("POSTGRES_HOST", "localhost")
-    pg_port = int(os.getenv('POSTGRES_PORT', '5432'))
     batch_size = int(os.getenv('BATCH_SIZE', '10000'))
 
-    if not all([pg_user, pg_pass, pg_db, batch_size]):
-            raise ValueError("Missing PostgreSQL environment variables")
+    oltp_db = os.getenv('OLTP_DB')
+    oltp_user = os.getenv('OLTP_USER')
+    oltp_pass = os.getenv('OLTP_PASS')
+    oltp_host = os.getenv("OLTP_HOST", "localhost")
+    oltp_port = int(os.getenv('OLTP_PORT', '5432'))
+
+    dwh_db = os.getenv('DWH_DB')
+    dwh_user = os.getenv('DWH_USER')
+    dwh_pass = os.getenv('DWH_PASS')
+    dwh_host = os.getenv("DWH_HOST", "localhost")
+    dwh_port = int(os.getenv('DWH_PORT', '5434'))
     
-    database_url = URL.create(
+    oltp_url = URL.create(
         drivername="postgresql+psycopg",
-        username=pg_user,
-        password=pg_pass,
-        host=pg_host,
-        port=pg_port,
-        database=pg_db,
+        username=oltp_user,
+        password=oltp_pass,
+        host=oltp_host,
+        port=oltp_port,
+        database=oltp_db,
     )
 
-    config_path = BASE_DIR / "core.yaml"
-    if not config_path.is_file():
-        raise FileNotFoundError(
-            f"Missing YAML config: {config_path}"
+    dwh_url = URL.create(
+            drivername="postgresql+psycopg",
+            username=dwh_user,
+            password=dwh_pass,
+            host=dwh_host,
+            port=dwh_port,
+            database=dwh_db,
         )
 
-    with config_path.open("r", encoding="utf-8") as file:
-        config = yaml.safe_load(file) or {}
+    
 
 settings = Settings()
