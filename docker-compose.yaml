@@ -1,23 +1,42 @@
 services:
-  postgres:
+  oltp:
     image: postgres:17
-    container_name: smart_logistics_postgres
+    container_name: smart-logistics-oltp
     restart: unless-stopped
 
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASS}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${OLTP_USER}
+      POSTGRES_PASSWORD: ${OLTP_PASS}
+      POSTGRES_DB: ${OLTP_DB}
 
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${OLTP_PORT}:5432"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./sql:/docker-entrypoint-initdb.d
+      - ./deals_bigdata:/docker-entrypoint-initdb.d
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d deals_bigdata"]
+      test: ["CMD-SHELL", "pg_isready -U ${OLTP_USER} -d ${OLTP_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dwh:
+    image: postgres:17
+    container_name: smart-logistics-dwh
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DWH_DB}
+      POSTGRES_USER: ${DWH_USER}
+      POSTGRES_PASSWORD: ${DWH_PASS}
+    ports:
+      - "${DWH_PORT}:5432"
+    volumes:
+      - dwh_data:/var/lib/postgresql/data
+      - ./dwh:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DWH_USER} -d ${DWH_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5

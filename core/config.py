@@ -14,7 +14,7 @@ class Settings:
     pg_pass = os.getenv('POSTGRES_PASS')
     pg_host = os.getenv("POSTGRES_HOST", "localhost")
     pg_port = int(os.getenv('POSTGRES_PORT', '5432'))
-    batch_size = int(os.getenv('BATCH_SIZE', '5432'))
+    batch_size = int(os.getenv('BATCH_SIZE', '10000'))
 
     if not all([pg_user, pg_pass, pg_db, batch_size]):
             raise ValueError("Missing PostgreSQL environment variables")
