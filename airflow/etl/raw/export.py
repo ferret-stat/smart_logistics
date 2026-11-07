@@ -41,6 +41,7 @@ def get_file_name(table_name: str) -> str:
 def export_data(
     conn_id: str,
     table_name: str,
+    updated_after: str | None = None,
 ) -> str:
 
 
@@ -70,9 +71,19 @@ def export_data(
 
             cursor.itersize = BATCH_SIZE
 
-            query = f'SELECT * FROM public."{table_name}" ORDER BY id'
+            query = f'SELECT * FROM public."{table_name}"'
 
-            cursor.execute(query)
+            if updated_after:
+                query += """
+                    WHERE updated_at > %s::timestamp - INTERVAL '5 minutes'
+                """
+
+            query += " ORDER BY id"
+
+            if updated_after:
+                cursor.execute(query, (updated_after,))
+            else:
+                cursor.execute(query)
 
             row_count = 0
 

@@ -3,6 +3,7 @@ import io
 import json
 import uuid
 
+from datetime import datetime
 from pathlib import Path
 
 from airflow.providers.postgres.hooks.postgres import PostgresHook
@@ -16,6 +17,7 @@ def load_data(
     file_path: str,
     table_name: str,
     source_id_column: str = "source_id",
+    watermark_column: str | None = None,
 ) -> dict:
 
 
@@ -23,8 +25,8 @@ def load_data(
 
     hook = PostgresHook(postgres_conn_id=conn_id)
     conn = hook.get_conn()
-
     total_rows = 0
+    max_updated_at = None
 
     try:
         with conn.cursor() as cursor:
@@ -68,6 +70,24 @@ def load_data(
                         break
 
                     record = json.loads(line)
+
+                    if watermark_column:
+                        updated_at = record.get(watermark_column)
+
+                        if updated_at is None:
+                            updated_at = record.get("payload", {}).get(watermark_column)
+
+                        if updated_at:
+                            if isinstance(updated_at, str):
+                                updated_at = datetime.fromisoformat(
+                                    updated_at.replace("Z", "+00:00")
+                                )
+
+                            if (
+                                max_updated_at is None
+                                or updated_at > max_updated_at
+                            ):
+                                max_updated_at = updated_at
 
                     source_id = record[source_id_column]
 
@@ -128,6 +148,27 @@ def load_data(
                 conn.commit()
 
                 total_rows += batch_rows
+
+        if watermark_column and max_updated_at is not None:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO raw.etl_watermarks (
+                        table_name,
+                        last_updated_at,
+                        updated_at
+                    )
+                    VALUES (%s, %s, NOW())
+                    ON CONFLICT (table_name)
+                    DO UPDATE SET
+                        last_updated_at = GREATEST(
+                            raw.etl_watermarks.last_updated_at,
+                            EXCLUDED.last_updated_at
+                        ),
+                        updated_at = NOW()
+                    """,
+                    (table_name, max_updated_at),
+                )
 
         with conn.cursor() as cursor:
             cursor.execute(

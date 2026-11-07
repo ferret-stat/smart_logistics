@@ -1,3 +1,9 @@
+CREATE TABLE raw.etl_watermarks (
+    table_name VARCHAR(255) PRIMARY KEY,
+    last_updated_at TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS raw.etl_batches (
     batch_id UUID PRIMARY KEY,
     started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
