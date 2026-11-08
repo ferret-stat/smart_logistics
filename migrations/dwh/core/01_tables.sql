@@ -1,34 +1,57 @@
--- Города. gc_id в источнике не уникален,
--- поэтому в Core используем отдельный surrogate key.
+CREATE SCHEMA IF NOT EXISTS core;
 
+
+--CITIES
+-- Один gc_id соответствует одному городу в Core
 CREATE TABLE IF NOT EXISTS core.dim_city (
     city_id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    source_city_id  BIGINT NOT NULL,
-    gc_id           BIGINT NOT NULL,
+    gc_id           BIGINT NOT NULL UNIQUE,
     city_name       TEXT,
-    region_name     TEXT,
+    full_name_local TEXT,
+    full_name_gc    TEXT,
     latitude        NUMERIC(10, 7),
-    longitude       NUMERIC(10, 7),
-
-    UNIQUE (source_city_id)
+    longitude       NUMERIC(10, 7)
 );
 
-CREATE INDEX IF NOT EXISTS idx_core_city_gcid
-    ON core.dim_city (gc_id);
+CREATE TABLE IF NOT EXISTS core.map_source_city (
+    source_city_id BIGINT PRIMARY KEY,
+    city_id        BIGINT NOT NULL
+        REFERENCES core.dim_city(city_id)
+);
 
+CREATE INDEX IF NOT EXISTS idx_map_source_city_city_id
+    ON core.map_source_city(city_id);
+
+
+--BODY GROUPS
 -- Стандартизированные группы кузовов.
 CREATE TABLE IF NOT EXISTS core.dim_body_group (
-    body_group_id   INTEGER PRIMARY KEY,
-    group_name      TEXT NOT NULL UNIQUE
+    body_group_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    std_id        BIGINT NOT NULL UNIQUE,
+    group_name    TEXT NOT NULL
 );
 
 
--- Факты сделок.
+CREATE TABLE IF NOT EXISTS core.map_source_body_type (
+    source_body_type_id BIGINT PRIMARY KEY,
+    body_group_id       BIGINT NOT NULL
+        REFERENCES core.dim_body_group(body_group_id),
+    source_type_name    TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_map_body_type_group
+    ON core.map_source_body_type(body_group_id);
+
+
+-- FACT TABLE
 CREATE TABLE IF NOT EXISTS core.fact_prices (
     price_id            BIGINT PRIMARY KEY,
 
-    loading_city_id     BIGINT REFERENCES core.dim_city(city_id),
-    unloading_city_id   BIGINT REFERENCES core.dim_city(city_id),
+    loading_city_id     BIGINT
+        REFERENCES core.dim_city(city_id),
+
+    unloading_city_id   BIGINT
+        REFERENCES core.dim_city(city_id),
 
     loading_date        DATE,
     end_loading_date    DATE,
@@ -50,32 +73,31 @@ CREATE TABLE IF NOT EXISTS core.fact_prices (
     outlier_mark        BOOLEAN DEFAULT FALSE,
 
     weight_category     TEXT,
-    volume_category    TEXT,
+    volume_category     TEXT,
 
     loaded_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_core_prices_loading_date
-    ON core.fact_prices (loading_date);
+    ON core.fact_prices(loading_date);
 
 CREATE INDEX IF NOT EXISTS idx_core_prices_route
-    ON core.fact_prices (loading_city_id, unloading_city_id);
+    ON core.fact_prices(loading_city_id, unloading_city_id);
 
 
--- Связь сделок с группами кузова.
--- Одна сделка может относиться к нескольким группам.
+-- BRIDGE TABLE
 CREATE TABLE IF NOT EXISTS core.bridge_price_body_group (
     price_id        BIGINT NOT NULL
         REFERENCES core.fact_prices(price_id) ON DELETE CASCADE,
 
-    body_group_id   INTEGER NOT NULL
+    body_group_id   BIGINT NOT NULL
         REFERENCES core.dim_body_group(body_group_id),
 
     PRIMARY KEY (price_id, body_group_id)
 );
 
 
--- Карантин невалидных записей.
+-- DQ QUARANTINE
 CREATE TABLE IF NOT EXISTS core.dq_quarantine_prices (
     quarantine_id   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     source_price_id BIGINT NOT NULL,
@@ -87,4 +109,12 @@ CREATE TABLE IF NOT EXISTS core.dq_quarantine_prices (
 );
 
 CREATE INDEX IF NOT EXISTS idx_quarantine_batch
-    ON core.dq_quarantine_prices (batch_id);
+    ON core.dq_quarantine_prices(batch_id);
+
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_dq_quarantine_price_batch_reason
+ON core.dq_quarantine_prices (
+    source_price_id,
+    batch_id,
+    reason_code
+);

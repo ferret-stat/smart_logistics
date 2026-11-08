@@ -91,11 +91,7 @@ def load_data(
 
                     source_id = record[source_id_column]
 
-                    payload = json.dumps(
-                        record,
-                        ensure_ascii=False,
-                    )
-
+                    payload = json.dumps(record["payload"], ensure_ascii=False)
                     writer.writerow((source_id, payload))
                     batch_rows += 1
 

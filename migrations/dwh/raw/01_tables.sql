@@ -50,3 +50,18 @@ CREATE TABLE IF NOT EXISTS raw.exchange_rates (
 
     PRIMARY KEY (source_id, batch_id)
 );
+
+CREATE TABLE IF NOT EXISTS raw.price_body_types (
+    source_id       BIGINT NOT NULL,
+    payload         JSONB NOT NULL,
+    batch_id UUID NOT NULL REFERENCES raw.etl_batches(batch_id),
+    extracted_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    PRIMARY KEY (source_id, batch_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_raw_prices_latest
+    ON raw.prices (source_id, extracted_at DESC, batch_id DESC);
+
+CREATE INDEX IF NOT EXISTS idx_raw_exchange_rates_latest
+    ON raw.exchange_rates (source_id, extracted_at DESC, batch_id DESC);
