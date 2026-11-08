@@ -150,6 +150,12 @@ def create_stage_prices(cursor) -> None:
                 END AS loading_city_gcid,
 
                 CASE
+                    WHEN COALESCE(p.payload->>'organization_id', '')
+                        ~ '^[0-9]+$'
+                    THEN (p.payload->>'organization_id')::BIGINT
+                END AS organization_id,
+
+                CASE
                     WHEN COALESCE(p.payload->>'unloading_city_gcid', '')
                          ~ '^[0-9]+$'
                     THEN (p.payload->>'unloading_city_gcid')::BIGINT
@@ -395,6 +401,7 @@ def upsert_fact_prices(cursor) -> int:
     cursor.execute("""
         INSERT INTO core.fact_prices (
             price_id,
+            organization_id,
             loading_city_id,
             unloading_city_id,
             loading_date,
@@ -417,6 +424,7 @@ def upsert_fact_prices(cursor) -> int:
 
         SELECT
             price_id,
+            organization_id,
             loading_city_id,
             unloading_city_id,
             loading_date,
@@ -442,6 +450,7 @@ def upsert_fact_prices(cursor) -> int:
         ON CONFLICT (price_id)
         DO UPDATE SET
             loading_city_id = EXCLUDED.loading_city_id,
+            organization_id = EXCLUDED.organization_id,
             unloading_city_id = EXCLUDED.unloading_city_id,
             loading_date = EXCLUDED.loading_date,
             end_loading_date = EXCLUDED.end_loading_date,
@@ -462,6 +471,7 @@ def upsert_fact_prices(cursor) -> int:
             loaded_at = NOW()
 
         WHERE ROW(
+            core.fact_prices.organization_id,
             core.fact_prices.loading_city_id,
             core.fact_prices.unloading_city_id,
             core.fact_prices.loading_date,
@@ -481,6 +491,7 @@ def upsert_fact_prices(cursor) -> int:
             core.fact_prices.weight_category,
             core.fact_prices.volume_category
         ) IS DISTINCT FROM ROW(
+            EXCLUDED.organization_id,
             EXCLUDED.loading_city_id,
             EXCLUDED.unloading_city_id,
             EXCLUDED.loading_date,

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS mart.mart_route_card (
 
     origin_city_id      BIGINT NOT NULL,
     destination_city_id BIGINT NOT NULL,
-    body_group_id       INTEGER NOT NULL,
+    body_group_id       BIGINT NOT NULL,
     weight_category     TEXT NOT NULL,
 
     deals_count         BIGINT NOT NULL DEFAULT 0,

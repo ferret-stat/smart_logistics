@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS core.fact_prices (
 
     weight_category     TEXT,
     volume_category     TEXT,
+    organization_id      BIGINT,
 
     loaded_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
