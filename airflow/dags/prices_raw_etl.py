@@ -9,6 +9,9 @@ from etl.raw.transform import transform_data
 from etl.raw.load import load_data
 from etl.core.fact_prices import load_prices_core
 from etl.mart.route_card import rebuild_mart_route_card
+from etl.core.price_body_groups import (
+    rebuild_price_body_group_bridge,
+)
 
 
 @dag(
@@ -72,6 +75,18 @@ def prices_raw_etl():
         return load_prices_core(conn_id="dwh_postgres")
 
     @task
+    def build_price_body_group_bridge(fact_result: dict) -> dict:
+
+        if fact_result.get("status") != "SUCCESS":
+            raise ValueError(
+                "Загрузка fact_prices завершилась ошибкой"
+            )
+
+        return rebuild_price_body_group_bridge(
+            conn_id="dwh_postgres"
+        )
+
+    @task
     def build_mart_route_card(bridge_result: dict) -> dict:
 
         if bridge_result.get("status") != "SUCCESS":
@@ -84,15 +99,11 @@ def prices_raw_etl():
         )
         
     watermark = get_watermark()
-
     exported_file = export_prices(watermark)
-
-    transformed_file = transform_prices(
-            exported_file
-        )
-    
+    transformed_file = transform_prices(exported_file)
     raw_result = load_prices(transformed_file)
-    bridge_result = load_prices_to_core(raw_result)
+    fact_result = load_prices_to_core(raw_result)
+    bridge_result = build_price_body_group_bridge(fact_result)
     mart_result = build_mart_route_card(bridge_result)
 
 

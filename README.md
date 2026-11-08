@@ -511,7 +511,7 @@ volumes/ml/
 ### 1. Клонирование репозитория
 
 ```bash
-git clone <REPOSITORY_URL>
+git clone https://github.com/ferret-stat/smart_logistics/
 cd smart-logistics
 ```
 

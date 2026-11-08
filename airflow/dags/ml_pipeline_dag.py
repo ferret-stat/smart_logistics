@@ -13,7 +13,7 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
     ),
     catchup=False,
     max_active_runs=1,
-    tags=["smart-logistics", "ml", "pipeline"],
+    tags=["ml", "pipeline"],
 )
 def ml_pipeline():
 
