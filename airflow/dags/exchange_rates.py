@@ -22,7 +22,7 @@ from etl.raw.load import load_data
     catchup=False,
     is_paused_upon_creation=False,
     max_active_runs=1,
-    tags=["smart-logistics", "etl", "raw"],
+    tags=["exchange_rates", "etl", "raw", "core"],
 )
 def exchange_rates_raw_etl():
 

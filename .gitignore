@@ -8,3 +8,5 @@ logs/
 .idea/
 .vscode/
 *.jsonl
+*.parquet
+volumes/

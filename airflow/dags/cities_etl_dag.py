@@ -23,7 +23,7 @@ from etl.core.cities import load_cities_core
     catchup=False,
     max_active_runs=1,
     is_paused_upon_creation=False,
-    tags=["cities", "etl"],
+    tags=["cities", "etl", "raw", "core"],
 )
 def cities_raw_etl():
 

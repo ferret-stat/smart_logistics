@@ -24,7 +24,7 @@ from etl.mart.route_card import rebuild_mart_route_card
     catchup=False,
     is_paused_upon_creation=False,
     max_active_runs=1,
-    tags=["smart-logistics", "etl", "raw"],
+    tags=["prices", "etl", "raw", "core", "mart"],
 )
 def prices_raw_etl():
 

@@ -25,7 +25,7 @@ from etl.core.price_body_groups import (
     catchup=False,
     is_paused_upon_creation=False,
     max_active_runs=1,
-    tags=["smart-logistics", "etl", "raw"],
+    tags=["price_body_types", "etl", "raw", "core"],
 )
 def price_body_types_raw_etl():
 

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS mart.mart_route_card (
     weight_category     TEXT NOT NULL,
 
     deals_count         BIGINT NOT NULL DEFAULT 0,
-    carriers_count      BIGINT NOT NULL DEFAULT 0,
+    carriers_count      BIGINT NOT NULL DEFAULT 0, v  
 
     avg_price_rub       NUMERIC(18, 2),
     p25_price_rub       NUMERIC(18, 2),

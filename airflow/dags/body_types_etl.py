@@ -23,7 +23,7 @@ from etl.core.body_types import load_body_types_core
     catchup=False,
     max_active_runs=1,
     is_paused_upon_creation=False,
-    tags=["smart-logistics", "etl", "raw"],
+    tags=["etl", "raw", "core", "body_types_raw_etl"],
 )
 def body_types_raw_etl():
 
